@@ -15,9 +15,12 @@
   Adapted by Dominic Pajak
 
   This example code is in the public domain.
+
+  Example inspired by
+  https://create.arduino.cc/editor/TensorFlowExamples/8508c70f-5155-4e3b-b982-c5f6bd36ea5c/preview.
+  I've modified it to suit my use case.
 */
 
-// Arduino_TensorFlowLite - Version: 0.alpha.precompiled
 #include <TensorFlowLite.h>
 
 #include "tensorflow/lite/micro/all_ops_resolver.h"
@@ -35,7 +38,6 @@ tflite::MicroErrorReporter tflErrorReporter;
 // only pull in the TFLM ops you need, if would like to reduce
 // the compiled size of the sketch.
 tflite::AllOpsResolver tflOpsResolver;
-//static tflite::AllOpsResolver resolver;
 
 const tflite::Model *tflModel = nullptr;
 tflite::MicroInterpreter *tflInterpreter = nullptr;
@@ -47,7 +49,6 @@ TfLiteTensor *tflOutputTensor = nullptr;
 constexpr int tensorArenaSize = 8 * 1024;
 byte tensorArena[tensorArenaSize];
 
-const float threshold = 0.40;
 void setup()
 {
     Serial.begin(9600);
@@ -64,6 +65,16 @@ void setup()
     {
         Serial.println("Error initializing APDS9960 sensor.");
     }
+
+    // Initialize the led's.
+    pinMode(LEDR, OUTPUT);
+    pinMode(LEDG, OUTPUT);
+    //pinMode(LEDB, OUTPUT);
+
+    // Ensure it if off by default
+    // On the Arduino NANO 33 BLE Sense, HIGH is off.
+    digitalWrite(LEDR, HIGH);
+    digitalWrite(LEDG, HIGH);
 
     // get the TFL representation of the model byte array
     tflModel = tflite::GetModel(model);
@@ -90,37 +101,33 @@ void loop()
     int r, g, b, p, c;
     float sum;
 
-    // check if both color and proximity data sample is available
+    // Check if both color and proximity data sample is available.
     while (!APDS.colorAvailable() || !APDS.proximityAvailable())
     {
     }
 
-    // read the color and proximity sensor
+    // Read the color and proximity sensor.
     APDS.readColor(r, g, b, c);
     p = APDS.readProximity();
     sum = r + g + b;
 
-    // check if there's an object close and well illuminated enough
+    // Check if there's an object close and well illuminated enough.
     if (p == 0 && c > 10 && sum > 0)
     {
 
-        // normalize
+        // Normalize the values.
         float redRatio = r / sum;
         float greenRatio = g / sum;
         float blueRatio = b / sum;
 
-        // input sensor data to tensorflow
+        // Input sensor data to the loaded model.
         tflInputTensor->data.f[0] = redRatio;
         tflInputTensor->data.f[1] = greenRatio;
         tflInputTensor->data.f[2] = blueRatio;
 
-        //tflInputTensor->data.f[0] = 0.7391149;
-        //tflInputTensor->data.f[1] = 0.3885775;
-        //tflInputTensor->data.f[2] = 0.3869923;
-
-        //Serial.print(float(tflOutputTensor->data.f[0]), 5);
-
-        // run inferencing
+        // Invoke the inference.
+        // This is a great guide explaining the process
+        // https://www.tensorflow.org/lite/guide/inference
         TfLiteStatus invokeStatus = tflInterpreter->Invoke();
         if (invokeStatus != kTfLiteOk)
         {
@@ -130,39 +137,28 @@ void loop()
             return;
         }
 
-        if (tflOutputTensor->data.f[0] < 0.40)
+        if (tflOutputTensor->data.f[0] < 0.50)
         {
-            // Turn on the led
             Serial.print("Pikachu: ");
+            // Turn on the red and green LEDs to get yellow.
+            digitalWrite(LEDR, LOW);
+            digitalWrite(LEDG, LOW);
         }
         else
         {
             Serial.print("Bulbasaur: ");
+            // Turn on the green LED.
+            digitalWrite(LEDG, LOW);
         }
 
-        //Serial.print("\n");
         Serial.print(float(tflOutputTensor->data.f[0]), 5);
-        //Serial.print(tflOutputTensor)
-        //Serial.print(tflOutputTensor->data)
-        // output results
-        //for (int i = 0; i < 10; i++) {
-        //out = tflOutputTensor->data.f[i]
-        //float out[] = tflOutputTensor->data.f[i]
-        //Serial.print(sizeof(out)/sizeof(out)));
-        //Serial.print(redRatio);
-        //Serial.print("%\n");
-        //Serial.print(i);
-        //Serial.print("\n");
-        //Serial.print(CLASSES[i]);
-        //Serial.print(" ");
-        //Serial.print(float(tflOutputTensor->data.f[i]), 5);
-        //Serial.print("\n");
-        //}
         Serial.println();
 
-        // wait for the object to be moved away
+        // Wait until the sensor does not detect the object.
         while (!APDS.proximityAvailable() || (APDS.readProximity() == 0))
         {
         }
+        digitalWrite(LEDR, HIGH);
+        digitalWrite(LEDG, HIGH);
     }
 }
