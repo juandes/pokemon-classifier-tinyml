@@ -8,6 +8,9 @@
   Usage: Place object of interest to the color sensor
 
   This example code is in the public domain.
+
+  Taken and modified from 
+  https://create.arduino.cc/editor/TensorFlowExamples/ca761558-13ed-4190-baee-89ced06147c3/preview
 */
 
 #include <Arduino_APDS9960.h>
