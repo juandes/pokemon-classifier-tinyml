@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/Users/juande/.pyenv/shims/python",
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
+}

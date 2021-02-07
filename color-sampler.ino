@@ -19,22 +19,26 @@ void setup()
 {
 
     Serial.begin(9600);
+
+    // Check if the Serial port is ready
     while (!Serial)
     {
     };
 
+    // Check if the color sensor is ready
     if (!APDS.begin())
     {
         Serial.println("Error initializing APDS9960 sensor.");
     }
 
-    // print the header
+    // Print the header
     Serial.println("Red,Green,Blue,RedRatio,GreenRatio,BlueRatio,Class");
 }
 
 void loop()
 {
-    int r, g, b, c, p;
+    // a is the ambient light intensity
+    int r, g, b, a, p;
     float sum;
 
     // wait for proximity and color sensor data
@@ -43,19 +47,19 @@ void loop()
     }
 
     // read the color and proximity data 
-    APDS.readColor(r, g, b, c);
+    APDS.readColor(r, g, b, a);
     sum = r + g + b;
     p = APDS.readProximity();
 
     // if object is close and well enough illumated
-    if (p == 0 && c > 10 && sum > 0)
+    if (p == 0 && a > 10 && sum > 0)
     {
 
         float redRatio = r / sum;
         float greenRatio = g / sum;
         float blueRatio = b / sum;
 
-        // print the data in CSV format; the second argument is the number's precision.
+        // Print the data in CSV format; the second argument is the number's precision.
         Serial.print(r);
         Serial.print(',');
         Serial.print(g);
