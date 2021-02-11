@@ -31,12 +31,10 @@
 #include "Arduino_APDS9960.h"
 #include "model.h"
 
-// global variables used for TensorFlow Lite (Micro)
+// Set up logging
 tflite::MicroErrorReporter tflErrorReporter;
 
-// pull in all the TFLM ops, you can remove this line and
-// only pull in the TFLM ops you need, if would like to reduce
-// the compiled size of the sketch.
+// Add all the TensorFlow Lite Micro operations
 tflite::AllOpsResolver tflOpsResolver;
 
 const tflite::Model *tflModel = nullptr;
@@ -45,7 +43,7 @@ TfLiteTensor *tflInputTensor = nullptr;
 TfLiteTensor *tflOutputTensor = nullptr;
 
 // Create a static memory buffer for TFLM, the size may need to
-// be adjusted based on the model you are using
+// be adjusted based on the model you are using.
 constexpr int tensorArenaSize = 8 * 1024;
 byte tensorArena[tensorArenaSize];
 
@@ -71,7 +69,7 @@ void setup()
     pinMode(LEDG, OUTPUT);
     //pinMode(LEDB, OUTPUT);
 
-    // Ensure it if off by default
+    // Ensure it is off by default
     // On the Arduino NANO 33 BLE Sense, HIGH is off.
     digitalWrite(LEDR, HIGH);
     digitalWrite(LEDG, HIGH);
@@ -98,7 +96,8 @@ void setup()
 
 void loop()
 {
-    int r, g, b, p, c;
+    // a is the ambient light intensity
+    int r, g, b, a, p;
     float sum;
 
     // Check if both color and proximity data sample is available.
@@ -107,12 +106,12 @@ void loop()
     }
 
     // Read the color and proximity sensor.
-    APDS.readColor(r, g, b, c);
+    APDS.readColor(r, g, b, a);
     p = APDS.readProximity();
     sum = r + g + b;
 
     // Check if there's an object close and well illuminated enough.
-    if (p == 0 && c > 10 && sum > 0)
+    if (p == 0 && a > 10 && sum > 0)
     {
 
         // Normalize the values.
@@ -137,6 +136,7 @@ void loop()
             return;
         }
 
+        // 0.50 is my threshold
         if (tflOutputTensor->data.f[0] < 0.50)
         {
             Serial.print("Pikachu: ");
@@ -158,6 +158,8 @@ void loop()
         while (!APDS.proximityAvailable() || (APDS.readProximity() == 0))
         {
         }
+
+        // Turn off the LEDs.
         digitalWrite(LEDR, HIGH);
         digitalWrite(LEDG, HIGH);
     }

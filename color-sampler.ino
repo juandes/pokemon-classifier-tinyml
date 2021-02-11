@@ -41,12 +41,12 @@ void loop()
     int r, g, b, a, p;
     float sum;
 
-    // wait for proximity and color sensor data
+    // Check if both color and proximity data sample is available.
     while (!APDS.colorAvailable() || !APDS.proximityAvailable())
     {
     }
 
-    // read the color and proximity data 
+    // Read the color and proximity sensor.
     APDS.readColor(r, g, b, a);
     sum = r + g + b;
     p = APDS.readProximity();
