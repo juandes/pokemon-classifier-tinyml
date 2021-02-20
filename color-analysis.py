@@ -2,9 +2,7 @@ import cv2
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
-from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -63,7 +61,6 @@ def draw_3d_plot(colors):
     b = np.array(b) / 255.0
 
     x = np.array(colors)
-    print(x/255.0)
 
     fig = plt.figure()
     ax = Axes3D(fig)
