@@ -64,7 +64,7 @@ def draw_3d_plot(colors):
 
     fig = plt.figure()
     ax = Axes3D(fig)
-    # range is 0 to 1
+
     ax.scatter(r, g, b, c=x/256.0)
     ax.set_title("Pixel 3D plot")
     ax.set_xlabel('R')
