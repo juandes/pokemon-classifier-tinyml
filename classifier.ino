@@ -54,7 +54,7 @@ void setup()
     {
     };
 
-    Serial.println("Object classification using RGB color sensor");
+    Serial.println("Pokemon classification using RGB color sensor");
     Serial.println("--------------------------------------------");
     Serial.println("Arduino Nano 33 BLE Sense running TensorFlow Lite Micro");
     Serial.println("");
@@ -67,7 +67,6 @@ void setup()
     // Initialize the led's.
     pinMode(LEDR, OUTPUT);
     pinMode(LEDG, OUTPUT);
-    //pinMode(LEDB, OUTPUT);
 
     // Ensure it is off by default
     // On the Arduino NANO 33 BLE Sense, HIGH is off.
